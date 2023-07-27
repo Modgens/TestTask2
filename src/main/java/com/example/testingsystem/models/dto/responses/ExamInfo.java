@@ -1,12 +1,17 @@
-package com.example.testingsystem.models.dto.requests.responses;
+package com.example.testingsystem.models.dto.responses;
 
+import com.example.testingsystem.models.Question;
+import lombok.Builder;
 import lombok.Data;
 
-@Data
-public class ExamInfo {
-    private String teacherName;
-    private String name;
-    private Integer count;
-    private Integer maxPoint;
+import java.util.List;
 
+@Data
+@Builder
+public class ExamInfo {
+    private Long id;
+    private String name;
+    private String teacherName;
+    private Integer size;
+    private Integer maxPoint;
 }

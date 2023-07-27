@@ -1,6 +1,6 @@
-package com.example.testingsystem.security.user;
+package com.example.testingsystem.models;
 
-import com.alibou.security.token.Token;
+import com.example.testingsystem.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,20 +13,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+import static jakarta.persistence.GenerationType.*;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "_user")
+@Table(name = "user")
 public class User implements UserDetails {
 
   @Id
-  @GeneratedValue
-  private Integer id;
+  @GeneratedValue(strategy = IDENTITY)
+  private Long id;
   private String firstname;
   private String lastname;
-  private String email;
+  @Column(unique = true)
+  private String login;
   private String password;
 
   @Enumerated(EnumType.STRING)
@@ -47,7 +50,7 @@ public class User implements UserDetails {
 
   @Override
   public String getUsername() {
-    return email;
+    return login;
   }
 
   @Override

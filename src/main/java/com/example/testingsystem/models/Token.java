@@ -1,10 +1,13 @@
-package com.example.testingsystem.security.token;
+package com.example.testingsystem.models;
 
+import com.example.testingsystem.enums.TokenType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import static jakarta.persistence.GenerationType.*;
 
 @Data
 @Builder
@@ -14,8 +17,8 @@ import lombok.NoArgsConstructor;
 public class Token {
 
   @Id
-  @GeneratedValue
-  public Integer id;
+  @GeneratedValue(strategy = IDENTITY)
+  public Long id;
 
   @Column(unique = true)
   public String token;

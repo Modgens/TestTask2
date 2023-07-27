@@ -1,7 +1,8 @@
-package com.example.testingsystem.security.user;
+package com.example.testingsystem.enums;
 
 public enum Role {
 
   USER,
   TEACHER
 }
+

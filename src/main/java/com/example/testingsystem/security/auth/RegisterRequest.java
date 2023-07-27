@@ -1,5 +1,6 @@
-package com.example.testingsystem.auth;
+package com.example.testingsystem.security.auth;
 
+import com.example.testingsystem.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-
-  private String firstname;
-  private String lastname;
-  private String email;
+  private String first_name;
+  private String last_name;
+  private String login;
   private String password;
+  private String role;
 }

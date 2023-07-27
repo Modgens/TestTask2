@@ -1,6 +1,6 @@
-package com.example.testingsystem.config;
+package com.example.testingsystem.security.config;
 
-import com.alibou.security.token.TokenRepository;
+import com.example.testingsystem.repositories.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

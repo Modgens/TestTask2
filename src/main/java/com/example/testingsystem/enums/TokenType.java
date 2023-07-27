@@ -1,4 +1,4 @@
-package com.example.testingsystem.security.token;
+package com.example.testingsystem.enums;
 
 public enum TokenType {
   BEARER

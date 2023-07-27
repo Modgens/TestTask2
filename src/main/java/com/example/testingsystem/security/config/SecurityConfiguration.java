@@ -1,4 +1,4 @@
-package com.example.testingsystem.config;
+package com.example.testingsystem.security.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +11,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -26,11 +30,20 @@ public class SecurityConfiguration {
     http
         .csrf()
         .disable()
+            .cors()
+            .configurationSource(request -> {
+              CorsConfiguration config = new CorsConfiguration();
+              config.setAllowedOrigins(Collections.singletonList("http://26.4.69.93:5173"));
+              config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+              config.setAllowedHeaders(Collections.singletonList("*"));
+              return config;
+            })
+            .and()
         .authorizeHttpRequests()
         .requestMatchers("/api/v1/auth/**")
           .permitAll()
         .anyRequest()
-          .authenticated()
+          .permitAll()
         .and()
           .sessionManagement()
           .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

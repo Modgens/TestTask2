@@ -1,22 +1,26 @@
-package com.example.testingsystem.auth;
+package com.example.testingsystem.security.auth;
 
-import com.alibou.security.config.JwtService;
-import com.alibou.security.token.Token;
-import com.alibou.security.token.TokenRepository;
-import com.alibou.security.token.TokenType;
-import com.alibou.security.user.Role;
-import com.alibou.security.user.User;
-import com.alibou.security.user.UserRepository;
+import com.example.testingsystem.enums.Role;
+import com.example.testingsystem.enums.TokenType;
+import com.example.testingsystem.exceptions.DuplicateLoginException;
+import com.example.testingsystem.models.Token;
+import com.example.testingsystem.models.User;
+import com.example.testingsystem.repositories.TokenRepository;
+import com.example.testingsystem.repositories.UserRepository;
+import com.example.testingsystem.security.config.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 
 @Service
@@ -28,40 +32,42 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
 
-  public AuthenticationResponse register(RegisterRequest request) {
+  public void register(RegisterRequest request) {
+
     var user = User.builder()
-        .firstname(request.getFirstname())
-        .lastname(request.getLastname())
-        .email(request.getEmail())
+        .firstname(request.getFirst_name())
+        .lastname(request.getLast_name())
+        .login(request.getLogin())
         .password(passwordEncoder.encode(request.getPassword()))
-        .role(Role.USER)
+        .role(Role.valueOf(request.getRole()))
         .build();
-    var savedUser = repository.save(user);
-    var jwtToken = jwtService.generateToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-    saveUserToken(savedUser, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-        .build();
+    try {
+      repository.save(user);
+    } catch (DataIntegrityViolationException ex) {
+      throw new DuplicateLoginException("User with login " + user.getLogin() + " already exists");
+    }
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
+            request.getLogin(),
             request.getPassword()
         )
     );
-    var user = repository.findByEmail(request.getEmail())
+
+    var user = repository.findByLogin(request.getLogin())
         .orElseThrow();
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
+
     return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+            .accessToken(jwtToken)
             .refreshToken(refreshToken)
+            .role(user.getRole().name())
+            .userId(user.getId())
         .build();
   }
 
@@ -87,20 +93,17 @@ public class AuthenticationService {
     tokenRepository.saveAll(validUserTokens);
   }
 
-  public void refreshToken(
-          HttpServletRequest request,
-          HttpServletResponse response
-  ) throws IOException {
-    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+  public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    final String authHeader = request.getHeader("Authorization");
     final String refreshToken;
-    final String userEmail;
+    final String userLogin;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
       return;
     }
     refreshToken = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(refreshToken);
-    if (userEmail != null) {
-      var user = this.repository.findByEmail(userEmail)
+    userLogin = jwtService.extractUsername(refreshToken);
+    if (userLogin != null) {
+      var user = this.repository.findByLogin(userLogin)
               .orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateToken(user);

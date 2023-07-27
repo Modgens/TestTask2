@@ -1,6 +1,6 @@
-package com.example.testingsystem.config;
+package com.example.testingsystem.security.config;
 
-import com.alibou.security.user.UserRepository;
+import com.example.testingsystem.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +21,7 @@ public class ApplicationConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
-    return username -> repository.findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    return (String username) -> repository.findByLogin(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }
 
   @Bean

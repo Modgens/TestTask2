@@ -1,4 +1,4 @@
-package com.example.testingsystem.config;
+package com.example.testingsystem.security.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
